@@ -1,0 +1,48 @@
+<?php
+/**
+*
+*/
+
+// Disallow direct access.
+defined('ABSPATH') or die("Access denied");
+$block = $this->getBlock($this->block->id, [],  ['id', 'name', 'pinPoint', 'links', 'expressions', 'created']);
+$inPages = $block->pages ? $block->pages : [];
+$inPosts = $block->posts ? $block->posts : [];
+$inCats = $block->categories ? $block->categories : [];
+$inTags = $block->post_tags ? $block->post_tags : [];
+$inAux = [];
+$inLinks = !empty($block->links) ? explode("\n", $block->links) : [];
+$inExps = !empty($block->expressions) ? explode("\n", $block->expressions) : [];
+$allAssignment = array_merge( $inPages, $inPosts, $inCats, $inTags, $inLinks, $inExps );
+?>
+<?php
+	    // Add activeFileId into codeFile object.
+	    $this->block->file->activeFileId = $this->block->activeFileId;
+			// Hidden fields.
+			$fields = array('name', 'type', 'activeFileId');
+			foreach ($fields as $field) :
+				// Don't output until it has a value
+				// It better for traffic, client side
+				// should take care of this.
+				if (!$fieldValue = $this->block->file->$field) {
+					continue;
+				}
+?>
+		<input type="hidden" name="cjtoolbox[<?php echo $this->block->id; ?>][file][<?php echo $field ?>]" value="<?php echo $fieldValue ?>" />
+<?php endforeach; ?>
+		<div class="cjcontainer">
+			<div class="cjcodeblock">
+<?php 	echo $this->getTemplate('editor-toolbox', array(), 'tmpl/templates'); ?>
+				<div class="datablock">
+					<div id="editor-<?php echo $this->block->id ?>" class="code-editor"><?php echo htmlentities($this->block->file->code, null, 'UTF-8') ?></div>
+
+					<div class="cjt-info-bar">
+						<span>Code Block ID: <strong><?php echo $this->block->id; ?></strong></span>
+						<span>Assignments: <strong><?php echo count( $allAssignment ); ?></strong></span>
+						<span>User: <strong><?php echo get_userdata( $this->block->owner )->display_name; ?></strong></span>
+						<span>Created: <strong><?php echo date( 'd-m-Y, H:i', strtotime( $this->block->created ) ); ?></strong></span>
+						<span>Modified: <strong><?php echo date( 'd-m-Y, H:i', strtotime( $this->block->lastModified ) ); ?></strong></span>
+					</div>
+				</div>
+			</div>
+		</div>
